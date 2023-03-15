@@ -1,12 +1,7 @@
-const logInfo = (message) => {
+export const logInfo = (message: string) => {
     console.log(`--- INFO: ${message} ---`)
 }
 
-const logError = (error) => {
+export const logError = (error: string) => {
     console.error(`--- ERROR: ${error} ---`)
 }
-
-module.exports = {
-    logInfo,
-    logError,
-};

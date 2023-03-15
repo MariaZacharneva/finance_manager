@@ -5,6 +5,8 @@
 /.pnp
 /.idea
 /.run
+/.yarn
+/dist
 .pnp.js
 
 # testing

@@ -1,33 +1,37 @@
-const Pool = require('pg').Pool;
-const logger = require('../utils/logger')
-const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'postgres',
-    password: 'postgres',
-    port: 5432,
-});
+import {Pool} from 'pg';
+import {logInfo, logError} from "../utils/logger";
 
-const getAllMessages = async () => {
+export class DatabaseManager {
+  private readonly pool;
+
+  public constructor() {
+    this.pool = new Pool({
+      user: 'postgres',
+      host: 'localhost',
+      database: 'postgres',
+      password: 'postgres',
+      port: 5432,
+    })
+  }
+
+  public async getAllMessages() {
     try {
-        const result = await pool.query('SELECT * FROM init_table');
-        return result.rows;
+      const result = await this.pool.query('SELECT * FROM init_table');
+      return result.rows;
     } catch (err) {
-        logger.logError(err.toString());
+      logError(JSON.stringify(err));
+      throw err;
     }
-}
+  }
 
-const addMessage = async (new_text_message) => {
+  public async addNewMessage(new_text_message: string) {
     try {
-        const result = await pool.query('INSERT INTO init_table (text_message) VALUES ($1) RETURNING *',
-            [new_text_message]);
-        return result.rows[0];
+      const result = await this.pool.query('INSERT INTO init_table (text_message) VALUES ($1) RETURNING *',
+        [new_text_message]);
+      return result.rows[0];
     } catch (err) {
-        logger.logError(err.toString());
+      logError(JSON.stringify(err));
+      throw err;
     }
+  }
 }
-
-module.exports = {
-    getAllMessages,
-    addMessage,
-};
