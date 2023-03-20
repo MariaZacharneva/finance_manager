@@ -1,7 +1,8 @@
 import {Pool} from 'pg';
 import {logInfo, logError} from "../utils/logger";
+import {Request} from "express";
 
-export class DatabaseManager {
+export class DatabaseExecutor {
   private readonly pool;
 
   public constructor() {
@@ -14,7 +15,18 @@ export class DatabaseManager {
     })
   }
 
-  public async getAllMessages() {
+  public async query(queryString: string, queryValues?: any[]): Promise<{
+    rows: any[],
+    rowCount: number
+  }> {
+    return this.pool.query(queryString, queryValues);
+  }
+
+  public async getUserIdFromRequest(request: Request): Promise<number> {
+    return 0;
+  }
+
+  /* public async getAllMessages() {
     try {
       const result = await this.pool.query('SELECT * FROM init_table');
       return result.rows;
@@ -33,5 +45,5 @@ export class DatabaseManager {
       logError(JSON.stringify(err));
       throw err;
     }
-  }
+  }*/
 }
