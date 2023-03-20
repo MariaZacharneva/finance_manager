@@ -1,6 +1,7 @@
-import {DatabaseExecutor} from "./database_executor";
 import {DatabaseManager} from "./database_manager";
 import {logError} from "../utils/logger";
+import {PostgresError} from "../utils/error_types";
+import {PostgresErrorCode, PostgresErrorString} from "../utils/error_messages";
 
 export class SpendingHandler {
   private dbManager: DatabaseManager;
@@ -12,8 +13,16 @@ export class SpendingHandler {
   public async addSpending(user_id: number, description: string, value: number, currency: string, date: Date): Promise<number> {
     const queryString = "INSERT INTO spendings (user_id, description, value, currency, date) VALUES ($1, $2, $3, $4, $5) RETURNING spending_id;";
     const queryValues = [user_id, description, value, currency, date];
-    const rows = (await this.dbManager.query(queryString, queryValues)).rows;
-    return rows[0].spending_id;
+    try {
+      const rows = (await this.dbManager.query(queryString, queryValues)).rows;
+      return rows[0].spending_id;
+    } catch (err) {
+      if (err instanceof PostgresError && err.code === PostgresErrorCode.ForeignKeyViolation) {
+        throw new PostgresError(PostgresErrorCode.ForeignKeyViolation, PostgresErrorString.ForeignKeyViolation);
+      } else {
+        throw err;
+      }
+    }
   }
 
   public async updateSpending(user_id: number, spending_id: number, description: string, value: number, currency: string, date: Date) {
@@ -28,7 +37,7 @@ export class SpendingHandler {
     await this.dbManager.query(queryString, queryValues);
   }
 
-  public async userIdForSpending(spending_id: number):Promise<number> {
+  public async userIdForSpending(spending_id: number): Promise<number> {
     const queryString = "SELECT user_id FROM spendings WHERE spending_id = $1;";
     const queryValues = [spending_id];
     const rows = (await this.dbManager.query(queryString, queryValues)).rows;

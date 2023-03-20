@@ -1,5 +1,7 @@
 import {DatabaseManager} from "./database_manager";
-import {logError} from "../utils/logger";
+import {ErrorCode, ErrorString, PostgresErrorCode, PostgresErrorString} from "../utils/error_messages";
+import {HttpError, PostgresError} from "../utils/error_types";
+import {logInfo} from "../utils/logger";
 
 export class CategoryHandler {
   private dbManager: DatabaseManager;
@@ -11,8 +13,16 @@ export class CategoryHandler {
   public async addCategory(user_id: number, group_id: number, description: string): Promise<number> {
     const queryString = "INSERT INTO categories (user_id, group_id, description) VALUES ($1, $2, $3) RETURNING category_id;";
     const queryValues = [user_id, group_id, description];
-    const rows = (await this.dbManager.query(queryString, queryValues)).rows;
-    return rows[0].category_id;
+    try {
+      const rows = (await this.dbManager.query(queryString, queryValues)).rows;
+      return rows[0].category_id;
+    } catch (err) {
+      if (err instanceof PostgresError && err.code === PostgresErrorCode.ForeignKeyViolation) {
+        throw new PostgresError(PostgresErrorCode.ForeignKeyViolation, PostgresErrorString.ForeignKeyViolation);
+      } else {
+        throw err;
+      }
+    }
   }
 
   public async updateCategory(user_id: number, category_id: number, group_id: number, description: string) {
@@ -33,17 +43,7 @@ export class CategoryHandler {
     await this.dbManager.query(queryString, queryValues);
   }
 
-  public async checkCategoryExistence(category_id: number) {
-    const queryString = "SELECT EXISTS(SELECT 1 FROM categories WHERE category_id = $1);";
-    const queryValues = [category_id];
-    const rows = (await this.dbManager.query(queryString, queryValues)).rows;
-    if (!rows[0].exists) {
-      logError(`Category ${category_id} does not exist`);
-      throw new Error("Invalid category id");
-    }
-  }
-
-  public async userIdForCategory(category_id: number):Promise<number> {
+  public async userIdForCategory(category_id: number): Promise<number> {
     const queryString = "SELECT user_id FROM categories WHERE category_id = $1;";
     const queryValues = [category_id];
     const rows = (await this.dbManager.query(queryString, queryValues)).rows;
@@ -51,9 +51,31 @@ export class CategoryHandler {
   }
 
   public async getAllCategoriesForUser(user_id: number): Promise<{ categories: { category_id: number, description: string }[] }> {
-    const queryString = "SELECT category_id, description FROM categories WHERE user_id = $1;";
+    const queryString = "SELECT category_id, description, group_id FROM categories WHERE user_id = $1;";
     const queryValues = [user_id];
     const rows = (await this.dbManager.query(queryString, queryValues)).rows;
     return {categories: rows};
+  }
+
+  public async getCategoryInfo(user_id: number, category_id: number): Promise<{
+    category_id: number,
+    description: string,
+    group_id: number
+    spendings: number [] // TODO: change
+  }> {
+    const queryString1 = "SELECT category_id, description, group_id FROM categories WHERE user_id = $1 AND category_id = $2;";
+    const queryValues1 = [user_id, category_id];
+    // TODO: select spendings
+    const rows = (await this.dbManager.query(queryString1, queryValues1)).rows;
+    const spendings: number [] = []; //TODO: change
+    if (rows.length === 0) {
+      throw new HttpError(ErrorCode.BadRequest, ErrorString.ObjectDoesNotExist);
+    }
+    return {
+      category_id: rows[0].category_id,
+      description: rows[0].description,
+      group_id: rows[0].group_id,
+      spendings: spendings
+    };
   }
 }
