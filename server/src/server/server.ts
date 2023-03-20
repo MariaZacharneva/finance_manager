@@ -1,9 +1,10 @@
-import express, {Express, Request, Response} from "express";
+import express, {Express, NextFunction, Request, Response} from "express";
 import cors from "cors";
 import {DatabaseManager} from "../database/database_manager";
 import {logInfo, logError} from "../utils/logger";
 import {RequestsHandler} from "./requests_handler";
 import {ErrorCode, ErrorString} from "../utils/error_messages";
+import {HttpError, PostgresError} from "../utils/error_types";
 
 export class Server {
   private readonly app: Express;
@@ -24,13 +25,24 @@ export class Server {
     this.app.get('/api', (req, res, next) => this.testConnection(req, res).catch(next));
 
     this.app.use((req: Request, res: Response) => {
-      res.status(404).json({error: ErrorString.NotFound});
+      res.status(ErrorCode.NotFound).json({error: ErrorString.NotFound});
     });
 
     this.app.use(
-      (err: Error, request: Request, response: Response) => {
-        logError(`Internal server error, request: ${request}, error: JSON.stringify(err)`);
-        response.status(ErrorCode.InternalServerError).json({error: ErrorString.InternalError});
+      (err: Error, request: Request, response: Response, next: NextFunction) => {
+        if (err instanceof PostgresError) {
+          logError(`Database error: ${err.code}, ${err.message}`);
+          response.status(ErrorCode.MethodNotAllowed).json({error: err.message});
+          return;
+        }
+        if (err instanceof HttpError) {
+          logError(`HttpError error: ${err.code}, ${err.message}`);
+          response.status(err.code).json({error: err.message});
+          return;
+        } else {
+          logError(`Internal server error: ${err.message}`);
+          response.status(ErrorCode.InternalServerError).json({error: ErrorString.InternalError});
+        }
       });
   }
 

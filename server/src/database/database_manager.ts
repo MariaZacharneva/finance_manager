@@ -2,10 +2,9 @@ import {Request} from "express";
 import {GroupsHandler} from "./groups_handler";
 import {CategoryHandler} from "./category_handler";
 import {SpendingHandler} from "./spending_handler";
-import {DatabaseExecutor} from "./database_executor";
-// import {Group, Category, Spending} from "./entities";
-import {logInfo} from "../utils/logger";
 import {Pool} from "pg";
+import {PostgresError} from "../utils/error_types";
+import {logInfo} from "../utils/logger";
 
 export class DatabaseManager {
   public readonly groupsHandler: GroupsHandler;
@@ -31,7 +30,12 @@ export class DatabaseManager {
     rows: any[],
     rowCount: number
   }> {
-    return this.pool.query(queryString, queryValues);
+    try {
+      return await this.pool.query(queryString, queryValues);
+    } catch (err) {
+      // @ts-ignore
+      throw new PostgresError(err.code, err.message);
+    }
   }
 
   public async getUserIdFromRequest(request: Request): Promise<number> {
