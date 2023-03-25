@@ -32,7 +32,7 @@ export class Server {
       (err: Error, request: Request, response: Response, next: NextFunction) => {
         if (err instanceof PostgresError) {
           logError(`Database error: ${err.code}, ${err.message}`);
-          response.status(ErrorCode.MethodNotAllowed).json({error: err.message});
+          response.status(ErrorCode.InternalServerError).json({error: err.message});
           return;
         }
         if (err instanceof HttpError) {

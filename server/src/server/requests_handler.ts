@@ -1,7 +1,7 @@
 import {DatabaseManager} from "../database/database_manager";
 import express, {Express, Request, Response} from "express";
 import {ErrorCode, ErrorString, SuccessCode} from "../utils/error_messages";
-import {logInfo} from "../utils/logger";
+import {logDebug, logInfo} from "../utils/logger";
 
 export class RequestsHandler {
   private readonly dbManager: DatabaseManager;
@@ -9,21 +9,38 @@ export class RequestsHandler {
   public constructor(dbManager: DatabaseManager, app: Express) {
     this.dbManager = dbManager;
 
-    app.post("/api/groups/get_all_groups", async (req, res, next) => this.getAllGroups(req, res).catch(next));
-    app.post("/api/groups/get_group_info", async (req, res, next) => this.getGroupInfo(req, res).catch(next));
-    app.post("/api/groups/add_group", async (req, res, next) => this.addGroup(req, res).catch(next));
-    app.post("/api/groups/update_group", async (req, res, next) => this.updateGroup(req, res).catch(next));
-    app.post("/api/groups/delete_group", async (req, res, next) => this.deleteGroup(req, res).catch(next));
-    app.post("/api/categories/get_all_categories", async (req, res, next) => this.getAllCategories(req, res).catch(next));
-    app.post("/api/categories/get_category_info", async (req, res, next) => this.getCategoryInfo(req, res).catch(next));
-    app.post("/api/categories/add_category", async (req, res, next) => this.addCategory(req, res).catch(next));
-    app.post("/api/categories/update_category", async (req, res, next) => this.updateCategory(req, res).catch(next));
-    app.post("/api/categories/delete_category", async (req, res, next) => this.deleteCategory(req, res).catch(next));
-    app.post("/api/spendings/get_all_spendings", async (req, res, next) => this.getAllSpendings(req, res).catch(next));
-    // TODO: app.post("/api/spendings/get_spending_info", async (req, res, next) => this.getSpendingInfo(req, res).catch(next));
-    app.post("/api/spendings/add_spending", async (req, res, next) => this.addSpending(req, res).catch(next));
-    app.post("/api/spendings/update_spending", async (req, res, next) => this.updateSpending(req, res).catch(next));
-    app.post("/api/spendings/delete_spending", async (req, res, next) => this.deleteSpending(req, res).catch(next));
+    app.post("/api/groups/get_all_groups",
+      async (req, res, next) => this.getAllGroups(req, res).catch(next));
+    app.post("/api/groups/get_group_info",
+      async (req, res, next) => this.getGroupInfo(req, res).catch(next));
+    app.post("/api/groups/add_group",
+      async (req, res, next) => this.addGroup(req, res).catch(next));
+    app.post("/api/groups/update_group",
+      async (req, res, next) => this.updateGroup(req, res).catch(next));
+    app.post("/api/groups/delete_group",
+      async (req, res, next) => this.deleteGroup(req, res).catch(next));
+    app.post("/api/categories/get_all_categories",
+      async (req, res, next) => this.getAllCategories(req, res).catch(next));
+    app.post("/api/categories/get_category_info",
+      async (req, res, next) => this.getCategoryInfo(req, res).catch(next));
+    app.post("/api/categories/add_category",
+      async (req, res, next) => this.addCategory(req, res).catch(next));
+    app.post("/api/categories/update_category",
+      async (req, res, next) => this.updateCategory(req, res).catch(next));
+    app.post("/api/categories/delete_category",
+      async (req, res, next) => this.deleteCategory(req, res).catch(next));
+    app.post("/api/spendings/get_all_spendings",
+      async (req, res, next) => this.getAllSpendings(req, res).catch(next));
+    app.post("/api/spendings/get_spending_info",
+      async (req, res, next) => this.getSpendingInfo(req, res).catch(next));
+    app.post("/api/spendings/add_spending_to_category",
+      async (req, res, next) => this.addSpendingToCategory(req, res).catch(next));
+    app.post("/api/spendings/add_spending",
+      async (req, res, next) => this.addSpending(req, res).catch(next));
+    app.post("/api/spendings/update_spending",
+      async (req, res, next) => this.updateSpending(req, res).catch(next));
+    app.post("/api/spendings/delete_spending",
+      async (req, res, next) => this.deleteSpending(req, res).catch(next));
   }
 
   public async getAllGroups(request: Request, response: Response) {
@@ -175,8 +192,8 @@ export class RequestsHandler {
   public async getAllSpendings(request: Request, response: Response) {
     try {
       const userId = await this.dbManager.getUserIdFromRequest(request);
-      const groups = await this.dbManager.spendingHandler.getAllSpendingsForUser(userId);
-      response.status(SuccessCode.OK).json(groups);
+      const spendings = await this.dbManager.spendingHandler.getAllSpendingsForUser(userId);
+      response.status(SuccessCode.OK).json(spendings);
     } catch (err) {
       throw err;
     }
@@ -195,7 +212,8 @@ export class RequestsHandler {
       const userId = await this.dbManager.getUserIdFromRequest(request);
       const newSpendingId = await this.dbManager.spendingHandler.addSpending(
         userId, spending_description, value, currency, date);
-      response.status(SuccessCode.OK).json({category_id: newSpendingId});
+      response.status(SuccessCode.OK).json({spending_id: newSpendingId});
+      logInfo(`Add spending: new id ${newSpendingId}`);
     } catch (err) {
       throw err;
     }
@@ -230,7 +248,38 @@ export class RequestsHandler {
     }
     try {
       const userId = await this.dbManager.getUserIdFromRequest(request);
-      await this.dbManager.spendingHandler.deleteSpending(userId, request.body.spending_id);
+      await this.dbManager.spendingHandler.deleteSpending(userId, spending_id);
+      response.status(SuccessCode.OK).json({});
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  public async getSpendingInfo(request: Request, response: Response) {
+    const spending_id = request.body.spending_id;
+    if (spending_id === undefined) {
+      response.status(ErrorCode.BadRequest).json({error: ErrorString.InvalidRequestBody});
+      return;
+    }
+    try {
+      const userId = await this.dbManager.getUserIdFromRequest(request);
+      const data = await this.dbManager.spendingHandler.getSpendingInfo(userId, spending_id);
+      response.status(SuccessCode.OK).json(data);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  public async addSpendingToCategory(request: Request, response: Response) {
+    const spending_id = request.body.spending_id;
+    const category_id = request.body.category_id;
+    if (spending_id === undefined || category_id === undefined) {
+      response.status(ErrorCode.BadRequest).json({error: ErrorString.InvalidRequestBody});
+      return;
+    }
+    try {
+      const userId = await this.dbManager.getUserIdFromRequest(request);
+      await this.dbManager.spendingHandler.addSpendingToCategory(userId, spending_id, category_id);
       response.status(SuccessCode.OK).json({});
     } catch (err) {
       throw err;

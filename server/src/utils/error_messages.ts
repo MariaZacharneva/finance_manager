@@ -1,7 +1,7 @@
 export enum ErrorCode {
   BadRequest = 400,
+  Forbidden = 403,
   NotFound = 404,
-  MethodNotAllowed = 405,
   InternalServerError = 500,
 }
 
@@ -15,6 +15,7 @@ export namespace ErrorString {
   export const NotFound = "The page does not exist";
   export const DatabaseError = "Internal database error";
   export const InternalError = "Internal server error";
+  export const NotEnoughRights = "Not enough rights to perform the operation";
 }
 
 export enum PostgresErrorCode {

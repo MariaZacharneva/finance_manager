@@ -34,28 +34,31 @@ CREATE TABLE spendings
     description varchar(200),
     value       int,
     currency    varchar(10),
-    date        date
+    date        bigint
 );
 
 CREATE TABLE groups
 (
     group_id    bigserial PRIMARY KEY,
-    user_id     bigint NOT NULL REFERENCES users (user_id),
+    user_id     bigint NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
     description varchar(50)
 );
 
 CREATE TABLE categories
 (
     category_id bigserial PRIMARY KEY,
-    user_id     bigint NOT NULL REFERENCES users (user_id),
-    group_id    bigint NOT NULL REFERENCES groups (group_id),
+    user_id     bigint NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
+    group_id    bigint NOT NULL REFERENCES groups (group_id) ON DELETE CASCADE,
     description varchar(50)
 );
 
 CREATE TABLE spendings_to_categories
 (
-    spending_id bigint NOT NULL REFERENCES spendings (spending_id),
-    category_id bigint NOT NULL REFERENCES categories (category_id)
+    spending_id bigint NOT NULL REFERENCES spendings (spending_id) ON DELETE CASCADE,
+    category_id bigint NOT NULL REFERENCES categories (category_id) ON DELETE CASCADE,
+    group_id bigint NOT NULL REFERENCES groups(group_id) ON DELETE CASCADE,
+    user_id bigint NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT group_to_spending PRIMARY KEY (group_id, spending_id)
 );
 
 

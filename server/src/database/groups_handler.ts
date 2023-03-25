@@ -23,7 +23,6 @@ export class GroupsHandler {
   }
 
   public async deleteGroup(user_id: number, group_id: number) {
-    await this.dbManager.categoryHandler.deleteAllCategoriesForGroup(user_id, group_id);
     const queryString = "DELETE FROM groups WHERE user_id = $1 AND group_id = $2;";
     const queryValues = [user_id, group_id];
     await this.dbManager.query(queryString, queryValues);
