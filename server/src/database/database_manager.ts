@@ -50,6 +50,6 @@ export class DatabaseManager {
 
   public async getUserIdFromRequest(request: Request): Promise<number> {
     // TODO: add login
-    return 0;
+    return 1;
   }
 }

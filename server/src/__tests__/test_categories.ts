@@ -1,4 +1,6 @@
-import {CategoryInfo, GroupInfo, SimpleCategoryInterface, SimpleGroupInterface} from "../test_utils/test_interfaces";
+import {
+  CategoryInfo, GroupInfo, SimpleCategoryInterface, SimpleGroupInterface
+} from "../test_utils/test_interfaces";
 import request from "supertest";
 import {ErrorCode, ErrorString, PostgresErrorString} from "../utils/error_messages";
 import {url, Helpers} from "../test_utils/test_helpers";
@@ -11,11 +13,11 @@ import {url, Helpers} from "../test_utils/test_helpers";
 //    "/api/categories/get_category_info"
 
 describe("Testing category functionality", () => {
-  it ("Get all categories", async () => {
+  it("Get all categories", async () => {
     await request(url).post("/api/categories/get_all_categories").expect(200)
-      .expect((res) => {
-        expect(res.body.hasOwnProperty("categories")).toBeTruthy();
-      });
+                      .expect((res) => {
+                        expect(res.body.hasOwnProperty("categories")).toBeTruthy();
+                      });
   });
 
   it("Add, update and delete category; get category info", async () => {
@@ -35,49 +37,49 @@ describe("Testing category functionality", () => {
       description: "cc_group-2",
     };
     await request(url).post("/api/groups/add_group").expect(200)
-      .send({description: group_1.description})
-      .expect((res) => {
-        expect(res.body.hasOwnProperty("group_id")).toBeTruthy();
-        group_1.group_id = res.body.group_id;
-      });
+                      .send({description: group_1.description})
+                      .expect((res) => {
+                        expect(res.body.hasOwnProperty("group_id")).toBeTruthy();
+                        group_1.group_id = res.body.group_id;
+                      });
     await request(url).post("/api/groups/add_group").expect(200)
-      .send({description: group_2.description})
-      .expect((res) => {
-        expect(res.body.hasOwnProperty("group_id")).toBeTruthy();
-        group_2.group_id = res.body.group_id;
-      });
+                      .send({description: group_2.description})
+                      .expect((res) => {
+                        expect(res.body.hasOwnProperty("group_id")).toBeTruthy();
+                        group_2.group_id = res.body.group_id;
+                      });
     category_1.group_id = group_1.group_id;
     await request(url).post("/api/categories/add_category").expect(200)
-      .send({description: category_1.description, group_id: category_1.group_id})
-      .expect((res) => {
-        expect(res.body.hasOwnProperty("category_id")).toBeTruthy();
-        category_1.category_id = res.body.category_id;
-      });
+                      .send({description: category_1.description, group_id: category_1.group_id})
+                      .expect((res) => {
+                        expect(res.body.hasOwnProperty("category_id")).toBeTruthy();
+                        category_1.category_id = res.body.category_id;
+                      });
     await request(url).post("/api/categories/get_category_info").expect(200)
-      .send({category_id: category_1.category_id})
-      .expect((res) => {
-        Helpers.CheckCategoriesInfo(res, category_1);
-      });
+                      .send({category_id: category_1.category_id})
+                      .expect((res) => {
+                        Helpers.CheckCategoriesInfo(res, category_1);
+                      });
     category_1.description = "category - 2";
     await request(url).post("/api/categories/update_category").expect(200)
-      .send({
-        category_id: category_1.category_id,
-        description: category_1.description,
-      }).expect({});
+                      .send({
+                              category_id: category_1.category_id,
+                              description: category_1.description,
+                            }).expect({});
     await request(url).post("/api/categories/get_category_info").expect(200)
-      .send({category_id: category_1.category_id})
-      .expect((res) => {
-        Helpers.CheckCategoriesInfo(res, category_1);
-      });
+                      .send({category_id: category_1.category_id})
+                      .expect((res) => {
+                        Helpers.CheckCategoriesInfo(res, category_1);
+                      });
     await request(url).post("/api/categories/delete_category").expect(200)
-      .send({category_id: category_1.category_id})
-      .expect({});
+                      .send({category_id: category_1.category_id})
+                      .expect({});
     await Helpers.CheckCategoryDoesNotExist(category_1.category_id);
     await request(url).post("/api/groups/delete_group").expect(200)
-      .send({group_id: group_1.group_id}).expect({});
+                      .send({group_id: group_1.group_id}).expect({});
     await Helpers.CheckGroupDoesNotExist(group_1.group_id);
     await request(url).post("/api/groups/delete_group").expect(200)
-      .send({group_id: group_2.group_id}).expect({});
+                      .send({group_id: group_2.group_id}).expect({});
     await Helpers.CheckGroupDoesNotExist(group_2.group_id);
   })
 
@@ -92,19 +94,19 @@ describe("Testing category functionality", () => {
       categories: [],
     };
     await request(url).post("/api/groups/add_group").expect(200)
-      .send({description: group_1.description})
-      .expect((res) => {
-        expect(res.body.hasOwnProperty("group_id")).toBeTruthy();
-        group_1.group_id = res.body.group_id;
-      });
+                      .send({description: group_1.description})
+                      .expect((res) => {
+                        expect(res.body.hasOwnProperty("group_id")).toBeTruthy();
+                        group_1.group_id = res.body.group_id;
+                      });
     await request(url).post("/api/categories/add_category").expect(200)
-      .send({description: category_1.description, group_id: group_1.group_id})
-      .expect((res) => {
-        expect(res.body.hasOwnProperty("category_id")).toBeTruthy();
-        category_1.category_id = res.body.category_id;
-      });
+                      .send({description: category_1.description, group_id: group_1.group_id})
+                      .expect((res) => {
+                        expect(res.body.hasOwnProperty("category_id")).toBeTruthy();
+                        category_1.category_id = res.body.category_id;
+                      });
     await request(url).post("/api/groups/delete_group").expect(200)
-      .send({group_id: group_1.group_id}).expect({});
+                      .send({group_id: group_1.group_id}).expect({});
     await Helpers.CheckGroupDoesNotExist(group_1.group_id);
     await Helpers.CheckCategoryDoesNotExist(category_1.category_id);
   });
@@ -147,21 +149,21 @@ describe("Testing category functionality", () => {
 describe("Testing categories expected errors", () => {
   it("Empty parameters", async () => {
     await request(url).post("/api/categories/add_category").expect(ErrorCode.BadRequest)
-      .expect((res) => {
-        expect(res.body.hasOwnProperty("error")).toBeTruthy();
-      });
+                      .expect((res) => {
+                        expect(res.body.hasOwnProperty("error")).toBeTruthy();
+                      });
     await request(url).post("/api/categories/update_category").expect(ErrorCode.BadRequest)
-      .expect((res) => {
-        expect(res.body.hasOwnProperty("error")).toBeTruthy();
-      });
+                      .expect((res) => {
+                        expect(res.body.hasOwnProperty("error")).toBeTruthy();
+                      });
     await request(url).post("/api/categories/delete_category").expect(ErrorCode.BadRequest)
-      .expect((res) => {
-        expect(res.body.hasOwnProperty("error")).toBeTruthy();
-      });
+                      .expect((res) => {
+                        expect(res.body.hasOwnProperty("error")).toBeTruthy();
+                      });
     await request(url).post("/api/categories/get_category_info").expect(ErrorCode.BadRequest)
-      .expect((res) => {
-        expect(res.body.hasOwnProperty("error")).toBeTruthy();
-      });
+                      .expect((res) => {
+                        expect(res.body.hasOwnProperty("error")).toBeTruthy();
+                      });
   });
 
   it("Add category to non-existing group", async () => {
@@ -171,11 +173,32 @@ describe("Testing categories expected errors", () => {
     };
     const group_id = Helpers.CreateNonExistingGroup();
     await request(url).post("/api/categories/add_category").expect(ErrorCode.BadRequest)
-      .send({description: category_1.description, group_id: await group_id})
-      .expect((res) => {
-        expect(res.body.hasOwnProperty("error")).toBeTruthy();
-        expect(res.body.error).toEqual(ErrorString.ObjectDoesNotExist);
-      });
+                      .send({description: category_1.description, group_id: await group_id})
+                      .expect((res) => {
+                        expect(res.body.hasOwnProperty("error")).toBeTruthy();
+                        expect(res.body.error).toEqual(ErrorString.ObjectDoesNotExist);
+                      });
     await Helpers.CheckCategoryDoesNotExist(category_1.category_id);
+  });
+
+  it("Not enough rights for accessing category", async () => {
+    const description = "category";
+    const wrong_category_id = 2;
+    await request(url).post("/api/categories/update_category").expect(ErrorCode.Forbidden)
+                      .send(
+                        {category_id: wrong_category_id, description: description})
+                      .expect((res) => {
+                        expect(res.body.hasOwnProperty("error")).toBeTruthy();
+                      });
+    await request(url).post("/api/categories/delete_category").expect(ErrorCode.Forbidden)
+                      .send({category_id: wrong_category_id})
+                      .expect((res) => {
+                        expect(res.body.hasOwnProperty("error")).toBeTruthy();
+                      });
+    await request(url).post("/api/categories/get_category_info").expect(ErrorCode.Forbidden)
+                      .send({category_id: wrong_category_id})
+                      .expect((res) => {
+                        expect(res.body.hasOwnProperty("error")).toBeTruthy();
+                      });
   });
 });

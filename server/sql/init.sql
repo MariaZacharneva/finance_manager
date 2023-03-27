@@ -24,9 +24,6 @@ CREATE TABLE users
     email   varchar(50)
 );
 
-INSERT INTO users(user_id, name, email)
-VALUES (0, 'MASHA', 'masha@gmail.com');
-
 CREATE TABLE spendings
 (
     spending_id bigserial PRIMARY KEY,
