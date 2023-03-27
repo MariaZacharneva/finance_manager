@@ -58,18 +58,3 @@ CREATE TABLE spendings_to_categories
     group_id bigint NOT NULL REFERENCES groups(group_id) ON DELETE CASCADE,
     CONSTRAINT group_to_spending PRIMARY KEY (group_id, spending_id)
 );
-
-
--- TRASACTION
---  SELECT EXISTS FROM categories, groups WHERE categories.category_id = $1 AND categories.group_id = groups.group_id AND groups.user_id = $2 LOCK
---  INSERT spending category
-
-
--- SELECT categories.category_id, categories.description, groups.group_id, groups.description, ARRAY(spendings.spending_id, spendings.description, spendings.value, spendings.currency, spendings.date)
--- FROM
-
-
-
--- FROM (categories INNER JOIN groups ON categories.group_id = groups.group_id) WHERE categories.user_id = $1 AND categories.category_id = $2;";
-
-
