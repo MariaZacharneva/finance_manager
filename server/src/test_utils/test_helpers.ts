@@ -13,18 +13,26 @@ import {logDebug} from "../utils/logger";
 export const url = "http://localhost:3001";
 
 function AreTwoArraysTheSame(first_array_of_objects: any[], second_array_of_objects: any[]): boolean {
-  const answer = (
-    first_array_of_objects.length === second_array_of_objects.length &&
-    first_array_of_objects.every((element_1) =>
-      second_array_of_objects.some((element_2) =>
-        Object.keys(element_1).every((key) => element_1[key] === element_2[key])
-      )
-    ));
-  if (!answer) {
+  try {
+    const answer = (
+      first_array_of_objects.length === second_array_of_objects.length &&
+      first_array_of_objects.every((element_1) =>
+                                     second_array_of_objects.some((element_2) =>
+                                                                    Object.keys(element_1).every(
+                                                                      (key) => element_1[key] ===
+                                                                               element_2[key])
+                                     )
+      ));
+    if (!answer) {
+      logDebug(JSON.stringify(first_array_of_objects));
+      logDebug(JSON.stringify(second_array_of_objects));
+    }
+    return answer;
+  } catch {
     logDebug(JSON.stringify(first_array_of_objects));
     logDebug(JSON.stringify(second_array_of_objects));
+    return false;
   }
-  return answer;
 }
 
 export namespace Helpers {

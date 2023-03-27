@@ -10,37 +10,37 @@ export class RequestsHandler {
     this.dbManager = dbManager;
 
     app.post("/api/groups/get_all_groups",
-      async (req, res, next) => this.getAllGroups(req, res).catch(next));
+             async (req, res, next) => this.getAllGroups(req, res).catch(next));
     app.post("/api/groups/get_group_info",
-      async (req, res, next) => this.getGroupInfo(req, res).catch(next));
+             async (req, res, next) => this.getGroupInfo(req, res).catch(next));
     app.post("/api/groups/add_group",
-      async (req, res, next) => this.addGroup(req, res).catch(next));
+             async (req, res, next) => this.addGroup(req, res).catch(next));
     app.post("/api/groups/update_group",
-      async (req, res, next) => this.updateGroup(req, res).catch(next));
+             async (req, res, next) => this.updateGroup(req, res).catch(next));
     app.post("/api/groups/delete_group",
-      async (req, res, next) => this.deleteGroup(req, res).catch(next));
+             async (req, res, next) => this.deleteGroup(req, res).catch(next));
     app.post("/api/categories/get_all_categories",
-      async (req, res, next) => this.getAllCategories(req, res).catch(next));
+             async (req, res, next) => this.getAllCategories(req, res).catch(next));
     app.post("/api/categories/get_category_info",
-      async (req, res, next) => this.getCategoryInfo(req, res).catch(next));
+             async (req, res, next) => this.getCategoryInfo(req, res).catch(next));
     app.post("/api/categories/add_category",
-      async (req, res, next) => this.addCategory(req, res).catch(next));
+             async (req, res, next) => this.addCategory(req, res).catch(next));
     app.post("/api/categories/update_category",
-      async (req, res, next) => this.updateCategory(req, res).catch(next));
+             async (req, res, next) => this.updateCategory(req, res).catch(next));
     app.post("/api/categories/delete_category",
-      async (req, res, next) => this.deleteCategory(req, res).catch(next));
+             async (req, res, next) => this.deleteCategory(req, res).catch(next));
     app.post("/api/spendings/get_all_spendings",
-      async (req, res, next) => this.getAllSpendings(req, res).catch(next));
+             async (req, res, next) => this.getAllSpendings(req, res).catch(next));
     app.post("/api/spendings/get_spending_info",
-      async (req, res, next) => this.getSpendingInfo(req, res).catch(next));
+             async (req, res, next) => this.getSpendingInfo(req, res).catch(next));
     app.post("/api/spendings/add_spending_to_category",
-      async (req, res, next) => this.addSpendingToCategory(req, res).catch(next));
+             async (req, res, next) => this.addSpendingToCategory(req, res).catch(next));
     app.post("/api/spendings/add_spending",
-      async (req, res, next) => this.addSpending(req, res).catch(next));
+             async (req, res, next) => this.addSpending(req, res).catch(next));
     app.post("/api/spendings/update_spending",
-      async (req, res, next) => this.updateSpending(req, res).catch(next));
+             async (req, res, next) => this.updateSpending(req, res).catch(next));
     app.post("/api/spendings/delete_spending",
-      async (req, res, next) => this.deleteSpending(req, res).catch(next));
+             async (req, res, next) => this.deleteSpending(req, res).catch(next));
   }
 
   public async getAllGroups(request: Request, response: Response) {
@@ -158,16 +158,15 @@ export class RequestsHandler {
 
   public async updateCategory(request: Request, response: Response) {
     const categoryId = request.body.category_id;
-    const groupId = request.body.group_id;
     const category_description = request.body.description;
-    if (categoryId === undefined || groupId === undefined || category_description === undefined) {
+    if (categoryId === undefined || category_description === undefined) {
       response.status(ErrorCode.BadRequest).json({error: ErrorString.InvalidRequestBody});
       return;
     }
     try {
       const userId = await this.dbManager.getUserIdFromRequest(request);
       await this.dbManager.categoryHandler.updateCategory(
-        userId, categoryId, groupId, category_description);
+        userId, categoryId, category_description);
       response.status(SuccessCode.OK).json({});
     } catch (err) {
       throw err;
@@ -204,7 +203,8 @@ export class RequestsHandler {
     const value = request.body.value;
     const currency = request.body.currency;
     const date = request.body.date;
-    if (spending_description === undefined || value === undefined || currency === undefined || date === undefined) {
+    if (spending_description === undefined || value === undefined || currency === undefined ||
+        date === undefined) {
       response.status(ErrorCode.BadRequest).json({error: ErrorString.InvalidRequestBody});
       return;
     }
@@ -226,7 +226,7 @@ export class RequestsHandler {
     const currency = request.body.currency;
     const date = request.body.date;
     if (spending_id === undefined || spending_description === undefined || value === undefined
-      || currency === undefined || date === undefined) {
+        || currency === undefined || date === undefined) {
       response.status(ErrorCode.BadRequest).json({error: ErrorString.InvalidRequestBody});
       return;
     }

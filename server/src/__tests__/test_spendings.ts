@@ -16,6 +16,7 @@ describe("Testing spendings functionality", () => {
         expect(res.body.hasOwnProperty("spendings")).toBeTruthy();
       });
   });
+
   it("Add, update and delete spending", async () => {
     const spending_1: SimpleSpendingInterface = {
       spending_id: 0,
@@ -69,9 +70,10 @@ describe("Testing spendings functionality", () => {
     };
     const group_1: SimpleGroupInterface = {
       group_id: 0,
-      description: "group",
+      description: "cc_group",
     }
     await Helpers.CreateGroupCategoryAndSpending(group_1, category_1, spending_1);
+
     await request(url).post("/api/spendings/add_spending_to_category").expect(200)
       .send({spending_id: spending_1.spending_id, category_id: category_1.category_id})
       .expect({});
@@ -102,12 +104,12 @@ describe("Testing spendings functionality", () => {
       category_id: 0,
       description: "category",
       group_id: 0,
-      group_description: "group",
+      group_description: "cc_group",
       spendings: []
     };
     const group_1: SimpleGroupInterface = {
       group_id: 0,
-      description: "group",
+      description: "cc_group",
     };
     await Helpers.CreateGroupCategoryAndSpending(group_1, category_1, spending_1);
     category_1.group_id = group_1.group_id;

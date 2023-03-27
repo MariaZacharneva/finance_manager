@@ -17,15 +17,31 @@ export class GroupsHandler {
   }
 
   public async updateGroup(user_id: number, group_id: number, description: string) {
-    const queryString = "UPDATE groups SET description = $1 WHERE user_id = $2 AND group_id = $3;";
-    const queryValues = [description, user_id, group_id];
-    await this.dbManager.query(queryString, queryValues);
+    try {
+      await this.dbManager.query("BEGIN;");
+      await this.checkUserRights(user_id, group_id);
+      const queryString = "UPDATE groups SET description = $1 WHERE group_id = $2;";
+      const queryValues = [description, group_id];
+      await this.dbManager.query(queryString, queryValues);
+      await this.dbManager.query("COMMIT;");
+    } catch (err) {
+      await this.dbManager.query("ROLLBACK;")
+      throw err;
+    }
   }
 
   public async deleteGroup(user_id: number, group_id: number) {
-    const queryString = "DELETE FROM groups WHERE user_id = $1 AND group_id = $2;";
-    const queryValues = [user_id, group_id];
-    await this.dbManager.query(queryString, queryValues);
+    try {
+      await this.dbManager.query("BEGIN;");
+      await this.checkUserRights(user_id, group_id);
+      const queryString = "DELETE FROM groups WHERE group_id = $1;";
+      const queryValues = [group_id];
+      await this.dbManager.query(queryString, queryValues);
+      await this.dbManager.query("COMMIT;");
+    } catch (err) {
+      await this.dbManager.query("ROLLBACK;")
+      throw err;
+    }
   }
 
   public async getAllGroupsForUser(user_id: number): Promise<{
@@ -41,15 +57,37 @@ export class GroupsHandler {
     group_id: number, description: string,
     categories: { category_id: number, description: string }[]
   }> {
-    const queryString1 = "SELECT group_id, description FROM groups WHERE user_id = $1 AND group_id = $2;";
-    const queryValues1 = [user_id, group_id];
-    const queryString2 = "SELECT category_id, description FROM categories WHERE user_id = $1 AND group_id = $2;";
-    const queryValues2 = [user_id, group_id];
-    const rows = (await this.dbManager.query(queryString1, queryValues1)).rows;
+    try {
+      await this.dbManager.query("BEGIN;");
+      await this.checkUserRights(user_id, group_id);
+      const queryString1 = "SELECT group_id, description, COALESCE ((SELECT json_agg(json_build_object('category_id', category_id, 'description', description)) FROM categories WHERE group_id = $1), '[]') AS categories FROM groups WHERE group_id = $1;";
+      const queryValues1 = [group_id];
+      const rows = (await this.dbManager.query(queryString1, queryValues1)).rows;
+      if (rows.length === 0) {
+        throw new HttpError(ErrorCode.BadRequest, ErrorString.ObjectDoesNotExist);
+      }
+      await this.dbManager.query("COMMIT;");
+      return {
+        group_id: rows[0].group_id,
+        description: rows[0].description,
+        categories: rows[0].categories
+      };
+    } catch (err) {
+      await this.dbManager.query("ROLLBACK;")
+      throw err;
+    }
+  }
+
+// The function should only be called inside the SQL transaction
+  public async checkUserRights(user_id: number, group_id: number) {
+    const queryString = "SELECT user_id FROM groups WHERE group_id = $1 FOR UPDATE;";
+    const queryValues = [group_id];
+    const rows = (await this.dbManager.query(queryString, queryValues)).rows;
     if (rows.length === 0) {
       throw new HttpError(ErrorCode.BadRequest, ErrorString.ObjectDoesNotExist);
     }
-    const categories = (await this.dbManager.query(queryString2, queryValues2)).rows;
-    return {group_id: rows[0].group_id, description: rows[0].description, categories: categories};
+    if (user_id !== rows[0].user_id) {
+      throw new HttpError(ErrorCode.Forbidden, ErrorString.NotEnoughRights);
+    }
   }
 }

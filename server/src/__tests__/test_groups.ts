@@ -22,7 +22,7 @@ describe("Testing basic groups functionality", () => {
   it("Add, update and delete group; get group info", async () => {
     const group_1: GroupInfo = {
       group_id: 0,
-      description: "group",
+      description: "gg_group",
       categories: [],
     };
     await request(url).post("/api/groups/add_group").expect(200)
@@ -31,7 +31,7 @@ describe("Testing basic groups functionality", () => {
         expect(res.body.hasOwnProperty("group_id")).toBeTruthy();
         group_1.group_id = res.body.group_id;
       });
-    group_1.description = "new description";
+    group_1.description = "gg_group_2";
     await request(url).post("/api/groups/update_group").expect(200)
       .send({description: group_1.description, group_id: group_1.group_id})
       .expect({});
