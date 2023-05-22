@@ -1,4 +1,5 @@
 import {useState} from "react";
+import {Button} from "react-bootstrap";
 
 export const AddGroupForm = ({onAddGroup}) => {
     const [groupName, setGroupName] = useState('');
@@ -18,7 +19,7 @@ export const AddGroupForm = ({onAddGroup}) => {
         <form onSubmit={handleSubmit}>
             Group name:
             <input type="text" onChange={handleGroupNameChange}/>
-            <button type="submit">Create group</button>
+            <Button variant="outline-dark"  type="submit">Create group</Button>
         </form>
     </div>);
 }

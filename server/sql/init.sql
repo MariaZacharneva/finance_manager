@@ -29,9 +29,9 @@ CREATE TABLE spendings
     spending_id bigserial PRIMARY KEY,
     user_id     bigint NOT NULL REFERENCES users (user_id) ON DELETE CASCADE,
     description varchar(200),
-    value       int,
+    value       numeric(17, 2),
     currency    varchar(10),
-    date        bigint
+    date        DATE
 );
 
 CREATE TABLE groups

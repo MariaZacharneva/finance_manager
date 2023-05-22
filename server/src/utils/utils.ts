@@ -1,6 +1,7 @@
+import {DateTime} from "luxon";
 
 export namespace Utils {
-  export function FormatDate(date: Date): string {
-    return date.getDay() + "-" + date.getMonth() + "-" + date.getFullYear();
+  export function FormatDate(date: string): string {
+    return "a";
   }
 }

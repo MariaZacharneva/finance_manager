@@ -210,10 +210,9 @@ export class RequestsHandler {
     }
     try {
       const userId = await this.dbManager.getUserIdFromRequest(request);
-      const newSpendingId = await this.dbManager.spendingHandler.addSpending(
+      const newSpending = await this.dbManager.spendingHandler.addSpending(
         userId, spending_description, value, currency, date);
-      response.status(SuccessCode.OK).json({spending_id: newSpendingId});
-      logInfo(`Add spending: new id ${newSpendingId}`);
+      response.status(SuccessCode.OK).json({new_spending: newSpending});
     } catch (err) {
       throw err;
     }

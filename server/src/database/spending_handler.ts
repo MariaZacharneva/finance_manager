@@ -1,6 +1,7 @@
 import {DatabaseManager} from "./database_manager";
 import {HttpError} from "../utils/error_types";
 import {ErrorCode, ErrorString,} from "../utils/error_messages";
+import {logError, logInfo} from "../utils/logger";
 
 export class SpendingHandler {
   private dbManager: DatabaseManager;
@@ -10,12 +11,18 @@ export class SpendingHandler {
   }
 
   public async addSpending(user_id: number, description: string, value: number, currency: string,
-                           date: number): Promise<number> {
-    const queryString = "INSERT INTO spendings (user_id, description, value, currency, date) VALUES ($1, $2, $3, $4, $5) RETURNING spending_id;";
+                           date: string): Promise<{
+    spending_id: number,
+    description: string,
+    value: number,
+    currency: string,
+    date: string
+  }> {
+    const queryString = "INSERT INTO spendings (user_id, description, value, currency, date) VALUES ($1, $2, $3, $4, $5) RETURNING *;";
     const queryValues = [user_id, description, value, currency, date];
     try {
       const rows = (await this.dbManager.query(queryString, queryValues)).rows;
-      return rows[0].spending_id;
+      return rows[0];
     } catch (err) {
       throw err;
     }
@@ -23,15 +30,25 @@ export class SpendingHandler {
 
 
   public async updateSpending(user_id: number, spending_id: number, description: string,
-                              value: number, currency: string, date: Date) {
+                              value: number, currency: string, date: string): Promise<{
+    new_spending: {
+      spending_id: number,
+      description: string,
+      value: number,
+      currency: string,
+      date: string
+    }
+  }> {
     try {
       await this.dbManager.query("BEGIN;");
       await this.checkUserRights(user_id, spending_id);
-      const queryString = "UPDATE spendings SET description = $1, value = $2, currency = $3, date = $4 WHERE spending_id = $5;";
+      const queryString = "UPDATE spendings SET description = $1, value = $2, currency = $3, date = $4 WHERE spending_id = $5 RETURNING *;";
       const queryValues = [description, value, currency, date, spending_id];
-      await this.dbManager.query(queryString, queryValues);
+      const rows = (await this.dbManager.query(queryString, queryValues)).rows;
       await this.dbManager.query("COMMIT;");
+      return rows[0];
     } catch (err) {
+      logError("Rollback: updateSpending fail");
       await this.dbManager.query("ROLLBACK;");
       throw err;
     }
@@ -46,6 +63,7 @@ export class SpendingHandler {
       await this.dbManager.query(queryString, queryValues);
       await this.dbManager.query("COMMIT;");
     } catch (err) {
+      logError("Rollback: deleteSpending fail");
       await this.dbManager.query("ROLLBACK;");
       throw err;
     }
@@ -74,6 +92,7 @@ export class SpendingHandler {
       await this.dbManager.query(queryString, queryValues);
       await this.dbManager.query("COMMIT;");
     } catch (err) {
+      logError("Rollback: addSpendingToCategory fail");
       await this.dbManager.query("ROLLBACK;");
       throw err;
     }
@@ -85,7 +104,7 @@ export class SpendingHandler {
       description: string,
       value: number,
       currency: string,
-      date: number
+      date: string
     }[]
   }> {
     const queryString = "SELECT spending_id, description, value, currency, date FROM spendings WHERE user_id = $1;";
@@ -99,7 +118,7 @@ export class SpendingHandler {
     description: string,
     value: number,
     currency: string,
-    date: number,
+    date: string,
     categories: {
       category_id: number,
       category_description: string,
@@ -126,6 +145,7 @@ export class SpendingHandler {
         categories: rows[0].categories
       };
     } catch (err) {
+      logError("Rollback: getSpendingInfo fail");
       await this.dbManager.query("ROLLBACK;");
       throw err;
     }
