@@ -1,6 +1,8 @@
 import {UpdateSpending, UpdateSpendingForm} from "./update_spending";
-import {Button, Modal, Table} from "react-bootstrap";
+import {Button, Dropdown, DropdownButton, Modal, Table} from "react-bootstrap";
 import {DeleteSpending} from "./delete_spending";
+import DropdownItem from "react-bootstrap/DropdownItem";
+import DropdownMenu from "react-bootstrap/DropdownMenu";
 
 function SpendingList({spendings, onDeleteSpending, onUpdateSpending}) {
     const sortedSpendings = spendings.sort((a, b) => {
@@ -33,10 +35,13 @@ function SpendingList({spendings, onDeleteSpending, onUpdateSpending}) {
                         <td style={tableCellStyle}>{spending.currency}</td>
                         <td style={tableCellStyle}>{
                             (new Date(spending.date)).toLocaleDateString('en-GB').replace(/\//g, '-')}</td>
-                        <td style={tableCellStyle}><UpdateSpending spending={spending}
-                                                                   onUpdateSpending={onUpdateSpending}/></td>
-                        <td style={tableCellStyle}><DeleteSpending spending={spending}
-                                                                   onDeleteSpending={onDeleteSpending}/></td>
+                        <td style={tableCellStyle}><DropdownButton title={""} variant="outline-dark">
+                            <UpdateSpending spending={spending}
+                                            onUpdateSpending={onUpdateSpending}/>
+                            <Dropdown.Divider/>
+                            <DeleteSpending spending={spending}
+                                            onDeleteSpending={onDeleteSpending}/>
+                        </DropdownButton></td>
                     </tr>
                 ))}
                 </tbody>

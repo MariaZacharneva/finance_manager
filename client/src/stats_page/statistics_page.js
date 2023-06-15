@@ -1,6 +1,11 @@
 import {GetAllSpendings} from "../utils/spendings_service";
+import {useEffect} from "react";
 
-function StatisticsPage() {
+function StatisticsPage({changeTab}) {
+    useEffect(() => {
+        changeTab('statistics');
+    }, [changeTab]);
+
     const [spendings, setSpendings] = GetAllSpendings();
     const totalSpendings = spendings.length;
     const totalSum = spendings.reduce((acc, cur) => acc + parseInt(cur.value), 0);

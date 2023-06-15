@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import DatePicker from "react-datepicker";
 import {UnifyDate} from "../utils/date_unificator";
 import {Button, Col, Form, Modal, Row} from "react-bootstrap";
+import DropdownItem from "react-bootstrap/DropdownItem";
 
 export function UpdateSpendingForm({spending, onSave, onCancel}) {
     const [description, setDescription] = useState(spending.description);
@@ -24,7 +25,6 @@ export function UpdateSpendingForm({spending, onSave, onCancel}) {
     return (
         <Modal.Body>
             <Form onSubmit={handleSubmit}>
-
                 <Form.Label>
                     <Form.Control
                         type="text"
@@ -75,12 +75,12 @@ export function UpdateSpending({spending, onUpdateSpending}) {
         setShowUpdateFrom(false);
     }
     return (<div>
-        <Button variant="outline-dark" onClick={() => setShowUpdateFrom(true)}>
+        <DropdownItem variant="outline-dark" className='floa' onClick={() => setShowUpdateFrom(true)}>
             Update
-        </Button>
+        </DropdownItem>
         <Modal show={showUpdateForm} onHide={handleHide}>
             <Modal.Header closeButton>
-                <Modal.Title>UpdateSpending</Modal.Title>
+                <Modal.Title>Update Spending</Modal.Title>
             </Modal.Header>
             <UpdateSpendingForm spending={spending} onSave={handleClick} onCancel={handleCancel}/>
         </Modal>

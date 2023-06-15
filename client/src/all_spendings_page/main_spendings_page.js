@@ -2,9 +2,13 @@ import AddSpendingForm from "./add_spending_form";
 import {AddGroupForm} from "./groups"
 import SpendingList from "./spending_list";
 import * as SpendingService from "../utils/spendings_service";
-import {DateTime} from "luxon";
+import {useEffect} from "react";
 
-function AllSpendingsPage() {
+function AllSpendingsPage({changeTab}) {
+    useEffect(() => {
+        changeTab('spendings');
+    }, [changeTab]);
+
     const [spendings, setSpendings] = SpendingService.GetAllSpendings();
     const handleAddSpending = (newSpending) => {
         SpendingService.AddSpending(newSpending).then((response) => {
@@ -16,10 +20,8 @@ function AllSpendingsPage() {
         SpendingService.DeleteSpending(spending_id).then(() => {
             setSpendings((prevSpendings) => prevSpendings.filter((spending) => spending.spending_id !== spending_id));
         })
-
     }
     const handleUpdateSpending = (updated_spending) => {
-        console.log(updated_spending.date);
         SpendingService.UpdateSpending(updated_spending).then((r) => {
                 const spendings_without_updated = spendings.filter((spending) => spending.spending_id !== updated_spending.spending_id);
                 setSpendings([...spendings_without_updated, updated_spending]);

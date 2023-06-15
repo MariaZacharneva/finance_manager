@@ -1,8 +1,10 @@
 import React, {useState} from 'react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import 'react-datepicker/dist/react-datepicker-cssmodules.css';
 import {UnifyDate} from "../utils/date_unificator";
 import {Button, Form} from "react-bootstrap";
+import {FillAllFieldsAlert} from "./fill_all_field_alert";
 
 function AddSpendingForm({onAddSpending}) {
     const [description, setDescription] = useState('');
@@ -59,7 +61,7 @@ function AddSpendingForm({onAddSpending}) {
             <Form.Label>
                 Value:
                 <Form.Control type="number" value={value} onChange={handleValueChange}/>
-            </Form.Label>
+            </Form.Label>{' '}
             <Form.Label>
                 Currency:
                 <Form.Select value={currency} onChange={handleCurrencyChange}>
@@ -71,7 +73,7 @@ function AddSpendingForm({onAddSpending}) {
             <br/>
             <Form.Label>
                 Date:
-                <DatePicker
+                <DatePicker className='form-control'
                     selected={date}
                     onChange={handleDateChange}
                     dateFormat="dd-MM-yyyy"
