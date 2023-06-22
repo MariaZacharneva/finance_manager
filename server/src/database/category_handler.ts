@@ -67,7 +67,7 @@ export class CategoryHandler {
   }
 
   public async getAllCategoriesForUser(user_id: number): Promise<{ categories: { category_id: number, description: string }[] }> {
-    const queryString = "SELECT categories.category_id, categories.description FROM categories, groups WHERE categories.group_id = groups.group_id AND groups.user_id = $1;";
+    const queryString = "SELECT categories.category_id, categories.description, groups.group_id FROM categories, groups WHERE categories.group_id = groups.group_id AND groups.user_id = $1;";
     const queryValues = [user_id];
     const rows = (await this.dbManager.query(queryString, queryValues)).rows;
     return {categories: rows};
@@ -87,7 +87,7 @@ export class CategoryHandler {
     } []
   }> {
     try {
-      await this.dbManager.query("BEGIN;");
+      await this.dbManager.beginTransaction();
       await this.checkUserRights(user_id, category_id);
       const queryString1 = "SELECT categories.category_id, categories.description as description, groups.group_id, groups.description as group_description, COALESCE ((SELECT json_agg(json_build_object('spending_id', spendings.spending_id, 'description', spendings.description, 'value', spendings.value, 'currency', spendings.currency, 'date', spendings.date)) FROM spendings, spendings_to_categories WHERE spendings.spending_id = spendings_to_categories.spending_id AND spendings_to_categories.category_id = $1), '[]') as spendings FROM categories, groups WHERE  categories.group_id = groups.group_id AND categories.category_id = $1;";
       const queryValues1 = [category_id];
@@ -95,7 +95,7 @@ export class CategoryHandler {
       if (rows.length === 0) {
         throw new HttpError(ErrorCode.BadRequest, ErrorString.ObjectDoesNotExist);
       }
-      await this.dbManager.query("COMMIT;");
+      await this.dbManager.commitTransaction();
       return {
         category_id: rows[0].category_id,
         description: rows[0].description,
@@ -104,7 +104,7 @@ export class CategoryHandler {
         spendings: rows[0].spendings
       };
     } catch (err) {
-      await this.dbManager.query("ROLLBACK;");
+      await this.dbManager.rollbackTransaction();
       throw err;
     }
   }

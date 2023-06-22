@@ -203,6 +203,7 @@ export class RequestsHandler {
     const value = request.body.value;
     const currency = request.body.currency;
     const date = request.body.date;
+    const groups_and_categories = request.body.groups_and_categories;
     if (spending_description === undefined || value === undefined || currency === undefined ||
         date === undefined) {
       response.status(ErrorCode.BadRequest).json({error: ErrorString.InvalidRequestBody});
@@ -211,7 +212,7 @@ export class RequestsHandler {
     try {
       const userId = await this.dbManager.getUserIdFromRequest(request);
       const newSpending = await this.dbManager.spendingHandler.addSpending(
-        userId, spending_description, value, currency, date);
+        userId, spending_description, value, currency, date, groups_and_categories);
       response.status(SuccessCode.OK).json({new_spending: newSpending});
     } catch (err) {
       throw err;
@@ -224,6 +225,7 @@ export class RequestsHandler {
     const value = request.body.value;
     const currency = request.body.currency;
     const date = request.body.date;
+    const groups_and_categories = request.body.groups_and_categories;
     if (spending_id === undefined || spending_description === undefined || value === undefined
         || currency === undefined || date === undefined) {
       response.status(ErrorCode.BadRequest).json({error: ErrorString.InvalidRequestBody});
@@ -231,9 +233,9 @@ export class RequestsHandler {
     }
     try {
       const userId = await this.dbManager.getUserIdFromRequest(request);
-      await this.dbManager.spendingHandler.updateSpending(
-        userId, spending_id, spending_description, value, currency, date);
-      response.status(SuccessCode.OK).json({});
+      const updated_spending = await this.dbManager.spendingHandler.updateSpending(
+        userId, spending_id, spending_description, value, currency, date, groups_and_categories);
+      response.status(SuccessCode.OK).json(updated_spending);
     } catch (err) {
       throw err;
     }

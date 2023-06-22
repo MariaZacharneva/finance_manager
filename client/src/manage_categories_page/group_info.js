@@ -27,13 +27,15 @@ export function GroupInfo({group, onDeleteGroup, onUpdateGroup}) {
         );
     }
 
+    const sorted_categories = categories.sort((a, b) => a.category_id - b.category_id);
+
     return (<div>
         <Card style={{width: "70%"}}>
             <Card.Header>
                 <Group group={group} onDeleteGroup={onDeleteGroup} onUpdateGroup={onUpdateGroup}/>
             </Card.Header>
             <ListGroup variant='flush'>
-                {categories.map((category) =>
+                {sorted_categories.map((category) =>
                     <ListGroupItem key={category.category_id}>
                         <Category category={category} onUpdateCategory={onUpdateCategory}
                                   onDeleteCategory={onDeleteCategory}/>

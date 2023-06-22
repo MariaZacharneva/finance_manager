@@ -14,12 +14,12 @@ export class DatabaseManager {
 
   public constructor() {
     this.pool = new Pool({
-      user: 'postgres',
-      host: 'localhost',
-      database: 'postgres',
-      password: 'postgres',
-      port: 5432,
-    });
+                           user: 'postgres',
+                           host: 'localhost',
+                           database: 'postgres',
+                           password: 'postgres',
+                           port: 5432,
+                         });
 
     types.setTypeParser(types.builtins.INT2, (value: string) => {
       return Number(value);
@@ -51,5 +51,17 @@ export class DatabaseManager {
   public async getUserIdFromRequest(request: Request): Promise<number> {
     // TODO: add login
     return 1;
+  }
+
+  public async beginTransaction() {
+    await this.pool.query("BEGIN;");
+  }
+
+  public async commitTransaction() {
+    await this.pool.query("COMMIT;");
+  }
+
+  public async rollbackTransaction() {
+    await this.pool.query("ROLLBACK;");
   }
 }

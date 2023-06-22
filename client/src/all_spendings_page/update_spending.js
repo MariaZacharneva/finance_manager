@@ -3,12 +3,15 @@ import DatePicker from "react-datepicker";
 import {UnifyDate} from "../utils/date_unificator";
 import {Button, Col, Form, Modal, Row} from "react-bootstrap";
 import DropdownItem from "react-bootstrap/DropdownItem";
+import * as GroupsCategoriesView from "../utils/groups_categories_view";
+import {CategoryChooser} from "../utils/category_chooser";
 
-export function UpdateSpendingForm({spending, onSave, onCancel}) {
+export function UpdateSpendingForm({spending, onSave, onCancel, groups, categories}) {
     const [description, setDescription] = useState(spending.description);
     const [value, setValue] = useState(spending.value);
     const [currency, setCurrency] = useState(spending.currency);
     const [date, setDate] = useState(new Date(spending.date));
+    const [selectedCategories, setSelectedCategories] = useState(GroupsCategoriesView.ArrayToObject(spending.categories));
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -17,7 +20,8 @@ export function UpdateSpendingForm({spending, onSave, onCancel}) {
             description: description,
             value: value,
             currency: currency,
-            date: UnifyDate(date)
+            date: UnifyDate(date),
+            groups_and_categories: GroupsCategoriesView.ObjectToArray(selectedCategories),
         };
         onSave(updatedSpending);
     };
@@ -55,15 +59,18 @@ export function UpdateSpendingForm({spending, onSave, onCancel}) {
                         controls={['date']}
                     /></Form.Label>
                 <br/>
+                <CategoryChooser groups={groups} categories={categories} selectedCategories={selectedCategories}
+                                 setSelectedCategories={setSelectedCategories}/>
+                <br/>
                 <Button variant="secondary" onClick={onCancel}>Cancel</Button>{' '}
-                <Button variant="primary" type="submit" >Save</Button>
+                <Button variant="primary" type="submit">Save</Button>
             </Form>
         </Modal.Body>);
 }
 
-export function UpdateSpending({spending, onUpdateSpending}) {
+export function UpdateSpending({spending, onUpdateSpending, groups, categories}) {
     const [showUpdateForm, setShowUpdateFrom] = useState(false);
-    const handleClick = (spending) => {
+    const handleSave = (spending) => {
         onUpdateSpending(spending);
         setShowUpdateFrom(false);
     };
@@ -82,7 +89,8 @@ export function UpdateSpending({spending, onUpdateSpending}) {
             <Modal.Header closeButton>
                 <Modal.Title>Update Spending</Modal.Title>
             </Modal.Header>
-            <UpdateSpendingForm spending={spending} onSave={handleClick} onCancel={handleCancel}/>
+            <UpdateSpendingForm spending={spending} onSave={handleSave} onCancel={handleCancel} groups={groups}
+                                categories={categories}/>
         </Modal>
     </div>);
 }

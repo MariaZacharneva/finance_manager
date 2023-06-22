@@ -35,3 +35,19 @@ export async function UpdateCategory(category) {
         throw new Error("Failed to update category from the server.");
     }
 }
+
+export function GetAllCategories() {
+    const [categories, setCategories] = useState([]);
+    useEffect(() => {
+        try {
+            axios.post(baseUrl + "/api/categories/get_all_categories")
+                .then(response => {
+                    console.log(response)
+                    setCategories(response.data.categories)
+                });
+        } catch (error) {
+            logger.logError("Error while fetching categories:", error);
+        }
+    }, []);
+    return [categories, setCategories];
+}
